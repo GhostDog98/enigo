@@ -236,13 +236,14 @@ pub trait Keyboard {
             return Ok(()); // Nothing to simulate.
         }
 
+        let fast_text_res = Ok(None);
+
         // Fast text entry can sometimes cause issues, specifically on windows with VMRC, but may appear elsewhere too.
         if force_disable_fast_text.is_none() || force_disable_fast_text == Some(false) {
             debug!("Trying to enter text using fast text entry");
             let fast_text_res = self.fast_text(text);
         } else {
             debug!("Fast text entry was disabled by the user");
-            let fast_text_res = Ok(None);
         }
 
         match fast_text_res {
