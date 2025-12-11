@@ -230,14 +230,21 @@ pub trait Keyboard {
     /// documentation of [`InputError`] to see under which other conditions an
     /// error will be returned.
     #[doc(alias = "key_sequence")]
-    fn text(&mut self, text: &str) -> InputResult<()> {
+    fn text(&mut self, text: &str, force_disable_fast_text: Option<bool>) -> InputResult<()> {
         if text.is_empty() {
             debug!("The text to enter was empty");
             return Ok(()); // Nothing to simulate.
         }
 
-        // Fall back to entering single keys if no fast text entry is available
-        let fast_text_res = self.fast_text(text);
+        // Fast text entry can sometimes cause issues, specifically on windows with VMRC, but may appear elsewhere too.
+        if force_disable_fast_text.is_none() || force_disable_fast_text == Some(false) {
+            debug!("Trying to enter text using fast text entry");
+            let fast_text_res = self.fast_text(text);
+        } else {
+            debug!("Fast text entry was disabled by the user");
+            let fast_text_res = Ok(None);
+        }
+
         match fast_text_res {
             Ok(Some(())) => {
                 debug!("fast text entry was successful");
