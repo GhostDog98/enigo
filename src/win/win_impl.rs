@@ -32,6 +32,7 @@ pub struct Enigo {
     release_keys_when_dropped: bool,
     dw_extra_info: usize,
     windows_subject_to_mouse_speed_and_acceleration_level: bool,
+    disable_fast_text: bool,
 }
 
 fn send_input(input: &[INPUT]) -> InputResult<()> {
@@ -265,6 +266,10 @@ impl Mouse for Enigo {
 }
 
 impl Keyboard for Enigo {
+    fn is_fast_text_disabled(&self) -> bool {
+        self.disable_fast_text
+    }
+
     fn fast_text(&mut self, _text: &str) -> InputResult<Option<()>> {
         Ok(None)
     }
@@ -380,6 +385,7 @@ impl Enigo {
             windows_dw_extra_info: dw_extra_info,
             release_keys_when_dropped,
             windows_subject_to_mouse_speed_and_acceleration_level,
+            disable_fast_text,
             ..
         } = settings;
 
@@ -393,6 +399,7 @@ impl Enigo {
             dw_extra_info: dw_extra_info.unwrap_or(crate::EVENT_MARKER as usize),
             windows_subject_to_mouse_speed_and_acceleration_level:
                 *windows_subject_to_mouse_speed_and_acceleration_level,
+            disable_fast_text: *disable_fast_text,
         })
     }
 

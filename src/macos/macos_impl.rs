@@ -77,6 +77,7 @@ pub struct Enigo {
     held: (Vec<Key>, Vec<CGKeyCode>), // Currently held keys
     event_source_user_data: i64,
     release_keys_when_dropped: bool,
+    disable_fast_text: bool,
     event_flags: CGEventFlags,
     double_click_delay: Duration,
     // Instant when the last event was sent and the duration that needs to be waited for after that
@@ -264,6 +265,10 @@ impl Mouse for Enigo {
 
 // https://stackoverflow.com/questions/1918841/how-to-convert-ascii-character-to-cgkeycode
 impl Keyboard for Enigo {
+    fn is_fast_text_disabled(&self) -> bool {
+        self.disable_fast_text
+    }
+
     fn fast_text(&mut self, text: &str) -> InputResult<Option<()>> {
         // Fn to create an iterator over sub slices of a str that have the specified
         // length
@@ -513,6 +518,7 @@ impl Enigo {
             event_source_user_data,
             open_prompt_to_get_permissions,
             independent_of_keyboard_state,
+            disable_fast_text,
             ..
         } = settings;
 
@@ -579,6 +585,7 @@ impl Enigo {
             event_source,
             held,
             release_keys_when_dropped: *release_keys_when_dropped,
+            disable_fast_text: *disable_fast_text,
             event_flags,
             double_click_delay,
             last_event,

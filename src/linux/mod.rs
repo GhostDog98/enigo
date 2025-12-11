@@ -41,6 +41,7 @@ pub mod keymap2;
 pub struct Enigo {
     held: (Vec<Key>, Vec<u16>), // Currently held keys and held keycodes
     release_keys_when_dropped: bool,
+    disable_fast_text: bool,
     #[cfg(feature = "wayland")]
     wayland: Option<wayland::Con>,
     #[cfg(any(feature = "x11rb", feature = "xdo"))]
@@ -63,6 +64,7 @@ impl Enigo {
             x11_display,
             wayland_display,
             release_keys_when_dropped,
+            disable_fast_text,
             ..
         } = settings;
 
@@ -120,6 +122,7 @@ impl Enigo {
         Ok(Self {
             held,
             release_keys_when_dropped: *release_keys_when_dropped,
+            disable_fast_text: *disable_fast_text,
             #[cfg(feature = "wayland")]
             wayland,
             #[cfg(any(feature = "x11rb", feature = "xdo"))]
@@ -307,6 +310,10 @@ impl Mouse for Enigo {
 }
 
 impl Keyboard for Enigo {
+    fn is_fast_text_disabled(&self) -> bool {
+        self.disable_fast_text
+    }
+
     fn fast_text(&mut self, text: &str) -> InputResult<Option<()>> {
         debug!("\x1b[93mfast_text(text: {text})\x1b[0m");
 

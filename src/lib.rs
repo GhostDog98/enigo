@@ -206,6 +206,14 @@ pub enum Coordinate {
 /// on the layout/keymap.
 #[doc(alias = "KeyboardControllable")]
 pub trait Keyboard {
+    /// Get whether fast text entry is disabled from settings
+    ///
+    /// # Errors
+    /// Have a look at the documentation of [`InputError`] to see under which
+    /// conditions an error will be returned.
+    #[doc(hidden)]
+    fn is_fast_text_disabled(&self) -> bool;
+
     /// Do not use this directly. Use the [`Keyboard::text`] function.
     ///
     /// Enter the whole text string instead of entering individual keys
@@ -230,18 +238,18 @@ pub trait Keyboard {
     /// documentation of [`InputError`] to see under which other conditions an
     /// error will be returned.
     #[doc(alias = "key_sequence")]
-    fn text(&mut self, text: &str, force_disable_fast_text: Option<bool>) -> InputResult<()> {
+    fn text(&mut self, text: &str) -> InputResult<()> {
         if text.is_empty() {
             debug!("The text to enter was empty");
             return Ok(()); // Nothing to simulate.
         }
 
-        let fast_text_res = Ok(None);
+        let mut fast_text_res = Ok(None);
 
         // Fast text entry can sometimes cause issues, specifically on windows with VMRC, but may appear elsewhere too.
-        if force_disable_fast_text.is_none() || force_disable_fast_text == Some(false) {
+        if !self.is_fast_text_disabled() {
             debug!("Trying to enter text using fast text entry");
-            let fast_text_res = self.fast_text(text);
+            fast_text_res = self.fast_text(text);
         } else {
             debug!("Fast text entry was disabled by the user");
         }
@@ -494,6 +502,9 @@ pub struct Settings {
     /// `windows::Win32::UI::WindowsAndMessaging::SystemParametersInfoA`
     /// function. The default value is false.
     pub windows_subject_to_mouse_speed_and_acceleration_level: bool,
+    /// Disable fast text entry. Fast text entry can sometimes cause issues,
+    /// specifically on windows with VMRC. The default is false (fast text is enabled).
+    pub disable_fast_text: bool,
 }
 
 impl Default for Settings {
@@ -508,6 +519,7 @@ impl Default for Settings {
             open_prompt_to_get_permissions: true,
             independent_of_keyboard_state: true,
             windows_subject_to_mouse_speed_and_acceleration_level: false,
+            disable_fast_text: false,
         }
     }
 }
